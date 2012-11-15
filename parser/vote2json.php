@@ -27,11 +27,12 @@ while($dirname=readdir($dir)){
 	//記名投票資料
 	$vote=$parser->get('vote');
 	//print_r($vote);
-
-	$json=json_encode($vote);
-	$f=fopen('../json/vote/vote_'.substr($dirname,0,strlen($dirname)-4).'.json','w');
-	fwrite($f,$json);
-	fclose($f);
+	if(count($vote)>0){
+		$json=json_encode($vote);
+		$f=fopen('../json/vote/vote_'.substr($dirname,0,strlen($dirname)-4).'.json','w');
+		fwrite($f,$json);
+		fclose($f);
+	}
 }
 
 ?>
