@@ -24,11 +24,24 @@ class parser_main{
 	
 	private function get_num($str){
 		$str=trim($str);
+		$n=mb_strpos($str,'人',0,'utf-8');
+		if($n!==false){
+			$str=mb_substr($str,0,$n,'utf-8');
+		}
+		$rep_list=array('一'=>1,'二'=>2,'三'=>3,'四'=>4,
+									'五'=>5,'六'=>6,'七'=>7,'八'=>8,
+									'九'=>9,'十'=>'','○'=>0);
+		while($k=key($rep_list)){
+			$str=str_replace($k, $rep_list[$k], $str);
+			next($rep_list);
+		}
+		
 		$n=mb_strpos($str,'：',0,'utf-8');
 		if($n===false){
 			$n=mb_strpos($str,'　',0,'utf-8');
 		}
-		return (int)mb_substr($str,$n+1,mb_strlen($str,'utf-8')-$n-2,'utf-8');
+		
+		return (int)mb_substr($str,$n+1,mb_strlen($str,'utf-8')-$n-1,'utf-8');
 	}
 	
 	private function fix_endspace($str){
@@ -51,9 +64,17 @@ class parser_main{
 		for($n=0;$n<count($tmp_name);$n++){
 			if(mb_strlen($tmp_name[$n],'utf-8')>4){
 				$tmp=explode('　',$tmp_name[$n]);
+				if(mb_strlen($tmp[0],'utf-8')<3){
+					$tmp[0].='　'.mb_substr($tmp[1],0,1,'utf-8');
+					$tmp[1]=mb_substr($tmp[1],1,mb_strlen($tmp[1],'utf-8'),'utf-8');
+				}
 				$tmp_name[$n]=$tmp[0];
 				for($m=1;$m<count($tmp);$m++){
 					if(trim($tmp[$m])!==''){
+						if(mb_strlen($tmp[$m],'utf-8')<2){
+							$tmp[$m+1]=$tmp[$m].'　'.$tmp[$m+1];
+							continue;
+						}
 						$tmp_name[]=$tmp[$m];
 					}
 				}
@@ -136,7 +157,7 @@ class parser_main{
 			if($tmp_vote['yes_num']>-1 and $tmp_vote['yes_list']==null){$tmp_vote['yes_list']=$this->name_list($tmp_str[$n],0);}
 			
 			if($item=='反對'){$tmp_vote['no_num']=$this->get_num($tmp_str[$n]);continue;}
-			if($tmp_vote['no_num']>-1 and $tmp_vote['no_list']==null){$tmp_vote['no_list']=$this->name_list($tmp_str[$n],0);}
+			if($tmp_vote['no_num']>0 and $tmp_vote['no_list']==null){$tmp_vote['no_list']=$this->name_list($tmp_str[$n],0);}
 			
 			if($item=='棄權'){
 				$tmp_vote['pass_num']=$this->get_num($tmp_str[$n]);
